@@ -1,4 +1,5 @@
 from math import inf
+import random
 
 import telebot
 
@@ -56,9 +57,12 @@ def send_answer(message):
     board = session.board
 
     if current_player == machine_player:
-        score = minimax(board, current_player, my_move, 0, -inf, inf)
-        if score != -inf:
-            row, col = ret()
+        if total_moves == 0:
+            row, col = random.randint(0, board_size - 1), random.randint(0, board_size - 1)
+        else:
+            score = minimax(board, current_player, my_move, 0, -inf, inf)
+            if score != -inf:
+                row, col = ret()
     else:
         try:
             row, col = map(lambda x: int(x) - 1, str(message.text).split())

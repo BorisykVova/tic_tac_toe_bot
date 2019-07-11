@@ -1,2 +1,2 @@
-terminaltables
-pyTelegramBotAPI
+terminaltables==3.1.0
+pyTelegramBotAPI==3.6.6
