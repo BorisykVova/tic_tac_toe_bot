@@ -57,7 +57,7 @@ def send_answer(message):
     board = session.board
 
     if current_player == machine_player:
-        if total_moves == 0:
+        if total_moves == 0 or 1:
             row, col = random.randint(0, board_size - 1), random.randint(0, board_size - 1)
         else:
             score = minimax(board, current_player, my_move, 0, -inf, inf)
