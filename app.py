@@ -1,13 +1,17 @@
+import typing as typ
 from math import inf
 import random
 
 import telebot
+from telebot.apihelper import ApiException
+from telebot.types import Message, CallbackQuery as Call
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from game_session import UserSession
 from border_worker import Board
 from get_score import ret, minimax
 
-TOKEN = '637684041:AAEpncPlFsmLlG3tyHbbjDobPtBqUB8wiDc'
+TOKEN = '843352714:AAG-24gS3rxGOAe4w0uL7EOP_oPdVilhN3k'
 bot = telebot.TeleBot(TOKEN)
 
 
@@ -15,38 +19,53 @@ count = 0
 user_session = {}
 
 
+@bot.message_handler(commands=['help'])
+def bot_help(message: Message):
+    bot.send_message(message.chat.id, 'None')
+
+
 @bot.message_handler(commands=['start'])
-def start(message):
-    bot.send_message(message.chat.id, 'This is a tic-tac-toe game. \n To start playing as X, enter the command: \n'
-                                      '/start_x. \n To start playing as O, enter the command: \n/start_o. \n In order'
-                                      ' to make a move you need to enter the coordinates of the desired cell through'
-                                      ' a space')
+def new_game(message: Message = None, user_id=None):
+    markup = InlineKeyboardMarkup()
+    button = InlineKeyboardButton('New game', callback_data='start')
+    markup.add(button)
+    chat_id = message.chat.id if message else user_id
+    bot.send_message(chat_id, 'Chose:', reply_markup=markup)
 
 
-@bot.message_handler(commands=['start_x'])
-def start_x(message):
-    user_session[message.chat.id] = UserSession('X')
-    session: UserSession = user_session[message.chat.id]
-    board = session.board
-    bot.send_message(message.chat.id, Board.str_board(board))
+@bot.callback_query_handler(func=lambda call: call.data == 'start')
+def chose_side(call: Call):
+    chat_id = call.from_user.id
+    markup = InlineKeyboardMarkup(2)
+    markup.row(InlineKeyboardButton('❌', callback_data='X'), InlineKeyboardButton('⭕️', callback_data='O'))
+    bot.send_message(chat_id, 'Chose your side:', reply_markup=markup)
 
 
-@bot.message_handler(commands=['start_o'])
-def start_o(message):
-    user_session[message.chat.id] = UserSession('O')
-    session: UserSession = user_session[message.chat.id]
-    board = session.board
-    bot.send_message(message.chat.id, Board.str_board(board))
-    send_answer(message)
-
-
-@bot.message_handler(func=lambda message: True)
-def send_answer(message):
-
-    if message.chat.id in user_session:
-        session: UserSession = user_session[message.chat.id]
+@bot.callback_query_handler(func=lambda call: call.data in ['X', 'O'])
+def side_callback(call: Call):
+    chat_id = call.from_user.id
+    data = call.data
+    user_session[chat_id] = UserSession(data)
+    if data is 'O':
+        send_answer(chat_id)
     else:
-        return bot.send_message(message.chat.id, "GAME IS OVER")
+        session: UserSession = user_session[chat_id]
+        board = session.board
+        bot.send_message(chat_id, 'Game: ', reply_markup=Board.button_board(board))
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback(call: Call):
+    chat_id = call.from_user.id
+    message_id = call.message.message_id
+    move = [*map(int, str(call.data).split(' '))]
+    if chat_id in user_session:
+        send_answer(chat_id, message_id, move)
+
+
+def send_answer(user_id: int = None, message_id: int = None, move: typ.List[int] = None):
+
+    session: UserSession = user_session[user_id]
 
     row, col = session.row, session.col
     board_size = session.board_size
@@ -64,11 +83,7 @@ def send_answer(message):
             if score != -inf:
                 row, col = ret()
     else:
-        try:
-            row, col = map(lambda x: int(x) - 1, str(message.text).split())
-        except ValueError:
-            bot.send_message(message.chat.id, 'You need to enter the coordinates of the desired cell through a space')
-
+        row, col = move
     if 0 <= row < board_size and 0 <= col < board_size:
         if board[row][col] == 0:
             board[row][col] = current_player
@@ -79,19 +94,27 @@ def send_answer(message):
     session.current_player = current_player
     session.total_moves = total_moves
 
-    bot.send_message(message.chat.id, Board.str_board(board))
+    if message_id:
+        try:
+            bot.edit_message_reply_markup(user_id, message_id, reply_markup=Board.button_board(board))
+        except ApiException:
+            pass
+    else:
+        bot.send_message(user_id, 'Game: ', reply_markup=Board.button_board(board))
 
     winner = Board.check_winner(board)
     if winner:
-        del user_session[message.chat.id]
-        return bot.send_message(message.chat.id, f"WIN FOR {'O' if winner is 1 else 'X'} !!!!")
+        del user_session[user_id]
+        text = 'You lose' if winner == machine_player else 'You won'
+        bot.send_message(user_id, text)
+        return new_game(user_id=user_id)
 
     if total_moves == board_size ** 2:
-        del user_session[message.chat.id]
-        return bot.send_message(message.chat.id, "GAME IS OVER")
+        del user_session[user_id]
+        return bot.send_message(user_id, "GAME IS OVER")
 
     if current_player == machine_player:
-        send_answer(message)
+        send_answer(user_id, message_id)
 
 
 bot.polling()
