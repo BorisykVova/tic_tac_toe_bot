@@ -11,7 +11,7 @@ from game_session import UserSession
 from border_worker import Board
 from get_score import ret, minimax
 
-TOKEN = '843352714:AAG-24gS3rxGOAe4w0uL7EOP_oPdVilhN3k'
+TOKEN = '637684041:AAEpncPlFsmLlG3tyHbbjDobPtBqUB8wiDc'
 bot = telebot.TeleBot(TOKEN)
 
 
