@@ -1,6 +1,5 @@
 from math import inf
 
-from terminaltables import AsciiTable
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
