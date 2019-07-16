@@ -1,3 +1,4 @@
+from copy import deepcopy
 import typing as typ
 from math import inf
 import random
@@ -8,9 +9,9 @@ from telebot.types import Message, CallbackQuery as Call
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from game_models import UserSession, GameField
-from get_score import minimax
+from get_score import minimax, best_move
 
-TOKEN = '843352714:AAG-24gS3rxGOAe4w0uL7EOP_oPdVilhN3k'
+TOKEN = '637684041:AAEpncPlFsmLlG3tyHbbjDobPtBqUB8wiDc'
 bot = telebot.TeleBot(TOKEN)
 
 
@@ -84,7 +85,7 @@ def end_move(game_field: GameField, chat_id: int, message_id: int, machine_playe
         return new_game(user_id=chat_id)
 
     if current_player == machine_player:
-        send_answer(chat_id, message_id)
+        return send_answer(chat_id, message_id)
 
 
 def send_answer(chat_id: int, message_id: int, move: typ.List[int] = None, first_message=False):
@@ -104,9 +105,9 @@ def send_answer(chat_id: int, message_id: int, move: typ.List[int] = None, first
         if total_moves <= 1:
             row, col = random.randint(0, game_field.size() - 1), random.randint(0, game_field.size() - 1)
         else:
-            score = minimax(game_field, current_player, my_move, 0, -inf, inf)
+            score = minimax(deepcopy(game_field), current_player, my_move, 0, -inf, inf)
             if score != -inf:
-                row, col = game_field.best_row, game_field.best_col
+                row, col = best_move()
     else:
         try:
             row, col = move
@@ -117,9 +118,8 @@ def send_answer(chat_id: int, message_id: int, move: typ.List[int] = None, first
         if board[row][col] == 0:
             game_field.make_move(row, col, current_player)
             current_player *= -1
-
-    session.game_field = game_field
-    session.current_player = current_player
+            session.game_field = game_field
+            session.current_player = current_player
 
     if first_message:
         bot.send_message(chat_id, f'You are playing as {game_field.board_element(1)}',
@@ -129,7 +129,7 @@ def send_answer(chat_id: int, message_id: int, move: typ.List[int] = None, first
             bot.edit_message_reply_markup(chat_id, message_id, reply_markup=game_field.button_board())
         except ApiException:
             pass
-
+    # print(machine_player)
     end_move(game_field, chat_id, message_id, machine_player, current_player)
 
 

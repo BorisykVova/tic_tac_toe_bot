@@ -1,8 +1,11 @@
 from math import inf
+import typing as typ
 
 from game_models import GameField
 
 MAX_DEPTH = inf
+best_row = -1
+best_col = -1
 
 
 def minimax(game_field: GameField, player: int, my_move: bool, depth: int, alpha, beta) -> int:
@@ -12,6 +15,7 @@ def minimax(game_field: GameField, player: int, my_move: bool, depth: int, alpha
     if winner != 0:
         return winner
 
+    global best_col, best_row
     score = alpha if my_move else beta
     move_row, move_col = -1, -1
     board = game_field.data
@@ -28,8 +32,8 @@ def minimax(game_field: GameField, player: int, my_move: bool, depth: int, alpha
                         score = current_score
                         move_row, move_col = i, j
                         if score >= beta:
-                            game_field.best_row = move_row
-                            game_field.best_col = move_col
+                            best_row = move_row
+                            best_col = move_col
                             return score
                 else:
                     current_score = minimax(game_field, -player, not my_move, depth + 1, alpha, score)
@@ -38,11 +42,15 @@ def minimax(game_field: GameField, player: int, my_move: bool, depth: int, alpha
                         score = current_score
                         move_row, move_col = i, j
                         if score <= alpha:
-                            game_field.best_row = move_row
-                            game_field.best_col = move_col
+                            best_row = move_row
+                            best_col = move_col
                             return score
     if move_row == - 1:
         return 0
-    game_field.best_row = move_row
-    game_field.best_col = move_col
+    best_row = move_row
+    best_col = move_col
     return score
+
+
+def best_move() -> typ.Tuple[int, int]:
+    return best_row, best_col
