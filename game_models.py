@@ -66,12 +66,12 @@ class UserSession:
     def __init__(self, side: str):
         if side == 'O':
             self.machine_player = -1
-            self.current_player = -1
             self.my_move = False
         else:
             self.machine_player = 1
-            self.current_player = -1
             self.my_move = True
+
+        self.current_player = -1
         self.board_size = 3
         self.max_depth = inf
         self.row = -1
