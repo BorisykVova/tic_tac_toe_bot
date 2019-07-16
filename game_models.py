@@ -10,7 +10,7 @@ class GameField:
         self.best_row = -1
         self.best_col = -1
 
-    def size(self,):
+    def size(self):
         return len(self.data)
 
     def make_move(self, row: int, col: int, value: int, moves: int = 1):
