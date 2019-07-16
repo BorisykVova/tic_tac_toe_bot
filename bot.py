@@ -4,7 +4,7 @@ import random
 
 import telebot
 from telebot.apihelper import ApiException
-from telebot.types import Message, CallbackQuery as Call, User
+from telebot.types import Message, CallbackQuery as Call
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from game_models import UserSession, GameField
@@ -14,7 +14,6 @@ TOKEN = '843352714:AAG-24gS3rxGOAe4w0uL7EOP_oPdVilhN3k'
 bot = telebot.TeleBot(TOKEN)
 
 
-count = 0
 user_session = {}
 
 
