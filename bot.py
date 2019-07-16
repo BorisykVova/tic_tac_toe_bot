@@ -4,13 +4,13 @@ import random
 
 import telebot
 from telebot.apihelper import ApiException
-from telebot.types import Message, CallbackQuery as Call
+from telebot.types import Message, CallbackQuery as Call, User
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from game_models import UserSession, GameField
 from get_score import minimax
 
-TOKEN = '637684041:AAEpncPlFsmLlG3tyHbbjDobPtBqUB8wiDc'
+TOKEN = '843352714:AAG-24gS3rxGOAe4w0uL7EOP_oPdVilhN3k'
 bot = telebot.TeleBot(TOKEN)
 
 
@@ -26,8 +26,7 @@ def bot_help(message: Message):
 @bot.message_handler(commands=['start'])
 def new_game(message: Message = None, user_id=None):
     markup = InlineKeyboardMarkup()
-    button = InlineKeyboardButton('New game', callback_data='start')
-    markup.add(button)
+    markup.row(InlineKeyboardButton('New game', callback_data='start'))
     chat_id = message.chat.id if message else user_id
     bot.send_message(chat_id, 'Chose:', reply_markup=markup)
 
@@ -36,9 +35,9 @@ def new_game(message: Message = None, user_id=None):
 def chose_side(call: Call):
     chat_id = call.from_user.id
     message_id = call.message.message_id
-    markup = InlineKeyboardMarkup(2)
-    markup.row(InlineKeyboardButton('❌', callback_data='X'), InlineKeyboardButton('⭕️', callback_data='O'))
-
+    markup = InlineKeyboardMarkup()
+    markup.row(InlineKeyboardButton('❌', callback_data='X'),
+               InlineKeyboardButton('⭕️', callback_data='O'))
     bot.delete_message(chat_id, message_id)
     bot.send_message(chat_id, 'Chose your side:', reply_markup=markup)
 
