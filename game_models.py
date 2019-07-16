@@ -10,6 +10,14 @@ class GameField:
         self.best_row = -1
         self.best_col = -1
 
+    def __str__(self) -> str:
+        board = self.data
+        board = [[self.board_element(cell) for cell in row] for row in board]
+        str_board = ''
+        for row in board:
+            str_board += ''.join(row) + '\n'
+        return str_board
+
     def size(self):
         return len(self.data)
 
@@ -25,14 +33,6 @@ class GameField:
                            for j, cell in enumerate(row)]
             keyboard.row(*button_list)
         return keyboard
-
-    def str_board(self) -> str:
-        board = self.data
-        board = [[self.board_element(cell) for cell in row] for row in board]
-        str_board = ''
-        for row in board:
-            str_board += ''.join(row) + '\n'
-        return str_board
 
     @classmethod
     def board_element(cls, cell: int) -> str:

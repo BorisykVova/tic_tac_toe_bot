@@ -74,14 +74,14 @@ def end_move(game_field: GameField, chat_id: int, message_id: int, machine_playe
         del user_session[chat_id]
         text = 'You lose' if winner == machine_player else 'You won'
         bot.delete_message(chat_id, message_id)
-        bot.send_message(chat_id, f'{game_field.str_board()}{text}')
+        bot.send_message(chat_id, f'{game_field}{text}')
         return new_game(user_id=chat_id)
 
     if game_field.total_moves == game_field.size() ** 2:
         del user_session[chat_id]
         text = 'Game over'
         bot.delete_message(chat_id, message_id)
-        bot.send_message(chat_id, f'{game_field.str_board()}{text}')
+        bot.send_message(chat_id, f'{game_field}{text}')
         return new_game(user_id=chat_id)
 
     if current_player == machine_player:
